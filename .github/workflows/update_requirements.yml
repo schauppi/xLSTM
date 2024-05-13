@@ -26,14 +26,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install pipreqs
 
-    - name: Generate project specific requirements.txt
+    - name: Generate project specific requirements.txt in src/
       run: |
-        pipreqs ./src --force  
+        pipreqs ./src --force
+
+    - name: Move requirements.txt to the root directory
+      run: |
+        mv src/requirements.txt ./requirements.txt
 
     - name: Commit and push if changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add src/requirements.txt
+        git add requirements.txt
         git commit -m "Automatically update requirements.txt with pipreqs" || echo "No changes to commit"
         git push
