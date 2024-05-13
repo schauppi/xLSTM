@@ -7,8 +7,7 @@ on:
     paths:
       - '**/*.py'
 
-permissions:
-  contents: write
+permissions: write-all
 
 jobs:
   update-requirements:
