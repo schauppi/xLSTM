@@ -5,7 +5,10 @@ on:
     branches:
       - '**'  
     paths:
-      - '**/*.py'  
+      - '**/*.py'
+
+permissions:
+  contents: write
 
 jobs:
   update-requirements:
