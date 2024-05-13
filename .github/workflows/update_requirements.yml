@@ -3,7 +3,7 @@ name: Update requirements.txt
 on:
   push:
     branches:
-      - '**'
+      - '**'  
     paths:
       - '**/*.py'
 
@@ -21,14 +21,19 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Generate requirements.txt
+    - name: Install pipreqs
       run: |
-        pip freeze > requirements.txt
+        python -m pip install --upgrade pip
+        pip install pipreqs
+
+    - name: Generate project specific requirements.txt
+      run: |
+        pipreqs ./src --force  
 
     - name: Commit and push if changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add requirements.txt
-        git commit -m "Update requirements.txt" -m "Automated update of requirements.txt via GitHub Actions." || echo "No changes to commit"
+        git add src/requirements.txt
+        git commit -m "Automatically update requirements.txt with pipreqs" || echo "No changes to commit"
         git push
