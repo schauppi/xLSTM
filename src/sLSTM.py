@@ -3,77 +3,77 @@ import torch.nn as nn
 
 torch.manual_seed(42)
 
-# https://github.com/jadechip/nanoXLSTM/blob/master/model.py
-# https://towardsdatascience.com/building-a-lstm-by-hand-on-pytorch-59c02a4ec091
-
 
 class sLSTM(nn.Module):
-    def __init__(self, n_embed):
+    def __init__(self, input_size, hidden_size):
         super().__init__()
-        self.n_embed = n_embed
+        self.input_size = input_size
+        self.hidden_size = hidden_size
 
-        # Input gate
-        self.W_i = nn.Linear(n_embed, n_embed)
-        self.U_i = nn.Linear(n_embed, n_embed)
+        # Cell input (zt)
+        self.Wz = nn.Linear(input_size, hidden_size)
+        self.Rz = nn.Linear(hidden_size, hidden_size)
+        self.bz = nn.Parameter(torch.zeros(hidden_size))
 
-        # Forget gate
-        self.W_f = nn.Linear(n_embed, n_embed)
-        self.U_f = nn.Linear(n_embed, n_embed)
+        # Input gate (it)
+        self.Wi = nn.Linear(input_size, hidden_size)
+        self.Ri = nn.Linear(hidden_size, hidden_size)
+        self.bi = nn.Parameter(torch.zeros(hidden_size))
 
-        # Cell gate
-        self.W_c = nn.Linear(n_embed, n_embed)
-        self.U_c = nn.Linear(n_embed, n_embed)
+        # Forget gate (ft)
+        self.Wf = nn.Linear(input_size, hidden_size)
+        self.Rf = nn.Linear(hidden_size, hidden_size)
+        self.bf = nn.Parameter(torch.zeros(hidden_size))
 
-        # Output gate
-        self.W_o = nn.Linear(n_embed, n_embed)
-        self.U_o = nn.Linear(n_embed, n_embed)
+        # Output gate (ot)
+        self.Wo = nn.Linear(input_size, hidden_size)
+        self.Ro = nn.Linear(hidden_size, hidden_size)
+        self.bo = nn.Parameter(torch.zeros(hidden_size))
 
-        # Output projection
-        self.output_projection = nn.Linear(n_embed, n_embed)
+        # Output projection layer
+        self.output_projection = nn.Linear(hidden_size, input_size)
 
-    def forward(self, x, h):
-        batch_size, seq_len, _ = x.size()
+    def _initialize_weights(self):
+        for param in self.parameters():
+            if len(param.shape) > 1:
+                nn.init.xavier_uniform_(param)
 
-        # Initialize cell state
-        c = torch.zeros(batch_size, self.n_embed)
+    def init_hidden_params(self, batch_size):
+        h_init = torch.zeros(batch_size, self.hidden_size)
+        c_init = torch.zeros(batch_size, self.hidden_size)
+        n_init = torch.ones(
+            batch_size, self.hidden_size
+        )  # Set to ones to avoid division by zero
+        return (h_init, c_init, n_init)
 
-        for t in range(seq_len):
-            x_t = x[:, t, :]
+    def forward(self, x, hidden_states):
+        hp, cp, np = hidden_states
 
-            # Linear transformations
-            Z_i = self.W_i(x_t) + self.U_i(h)
-            Z_f = self.W_f(x_t) + self.U_f(h)
-            Z_c = self.W_c(x_t) + self.U_c(h)
-            Z_o = self.W_o(x_t) + self.U_o(h)
+        # Cell input - equation (11)
+        zt = torch.tanh(self.Wz(x) + self.Rz(hp) + self.bz)
 
-            # Gates activations
-            i = torch.exp(Z_i)
-            f = torch.exp(Z_f)
-            o = torch.sigmoid(Z_o)
+        # Input gate - equation (12)
+        it = torch.exp(self.Wi(x) + self.Ri(hp) + self.bi)
 
-            # Update cell state
-            c = f * c + i * torch.tanh(Z_c)
+        # Forget gate - equation (13)
+        ft = torch.sigmoid(self.Wf(x) + self.Rf(hp) + self.bf)
 
-            # Normalize cell state
-            normalizer_state = f + i
-            c = c / normalizer_state
+        # Output gate - equation (14)
+        ot = torch.sigmoid(self.Wo(x) + self.Ro(hp) + self.bo)
 
-            # Update hidden state
-            h = o * torch.tanh(c)
+        # Cell state - equation (8)
+        C = ft * cp + it * zt
 
-        # Apply final projection
-        hidden_state = self.output_projection(h)
+        # Normalizer state - equation (9)
+        n = ft * np + it
 
-        return hidden_state, c
+        # Hidden state - equation (10)
+        h_tilde = C / (n + 1e-7)
 
+        # Update hidden state - equation (10)
+        h = ot * torch.tanh(h_tilde)
 
-# Example usage:
-n_embed = 128
-batch_size = 32
-seq_len = 10
-model = sLSTM(n_embed)
-x = torch.randn(batch_size, seq_len, n_embed)
-h = torch.zeros(batch_size, n_embed)
-output, c = model(x, h)
+        # Project the hidden state to the input size
+        y = self.output_projection(h)
 
-print(output.shape)
+        return y, (h, C, n)

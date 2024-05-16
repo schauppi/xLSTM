@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import math
 
+torch.manual_seed(42)
+
 
 class mLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, mem_dim):
@@ -28,6 +30,13 @@ class mLSTM(nn.Module):
         # Out matrice and bias term
         self.Wo = nn.Parameter(torch.randn(hidden_size, input_size))
         self.bo = nn.Parameter(torch.randn(hidden_size))
+
+        self._initialize_weights()
+
+    def _initialize_weights(self):
+        for param in self.parameters():
+            if len(param.shape) > 1:
+                nn.init.xavier_uniform_(param)
 
     def init_hidden_params(self, batch_size):
         c_init = torch.zeros(batch_size, self.mem_dim, self.mem_dim)
