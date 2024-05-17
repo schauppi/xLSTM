@@ -7,17 +7,17 @@ from src.sLSTM import sLSTM
 from src.utils.sine_wave import generate_sine_wave
 
 input_size = 5
-hidden_size = 10
+hidden_size = 5
 mem_dim = 5
 seq_len = 100
-num_sequences = 1
+num_sequences = 2
 
 data = generate_sine_wave(
     seq_len=seq_len, num_sequences=num_sequences, input_size=input_size
 )
 
 model = sLSTM(input_size=input_size, hidden_size=hidden_size)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 criterion = nn.MSELoss()
 
 for epoch in range(500):

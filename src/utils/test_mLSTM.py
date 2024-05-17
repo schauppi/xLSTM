@@ -19,7 +19,7 @@ data = generate_sine_wave(
 # [batch_size, seq_len, hidden_size/features]
 
 model = mLSTM(input_size=input_size, hidden_size=hidden_size, mem_dim=mem_dim)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 criterion = nn.MSELoss()
 
 for epoch in range(500):
