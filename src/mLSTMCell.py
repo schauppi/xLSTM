@@ -50,6 +50,8 @@ class mLSTMCell(nn.Module):
             self.bk = nn.Parameter((torch.zeros(hidden_size)), requires_grad=True)
             self.bv = nn.Parameter((torch.zeros(hidden_size)), requires_grad=True)
 
+        self.linear = nn.Linear(hidden_size, 1)
+
     def init_hidden(self, batch_size):
         return (
             torch.zeros(batch_size, self.hidden_size, self.hidden_size),
@@ -137,4 +139,7 @@ class mLSTMCell(nn.Module):
         # Hidden state part 2 - equation (21) -> (batch_size, hidden_size)
         ht = ot * h_tilde
 
-        return ht, (ct, nt, mt)
+        # Map the hidden state to the output -> (batch_size, 1)
+        output = self.linear(ht)
+
+        return output, (ct, nt, mt)

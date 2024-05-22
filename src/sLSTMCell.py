@@ -19,6 +19,8 @@ class sLSTMCell(nn.Module):
         if self.bias:
             self.B = nn.Parameter((torch.zeros(4 * hidden_size)), requires_grad=True)
 
+        self.linear = nn.Linear(hidden_size, 1)
+
     def init_hidden(self, batch_size):
         return (
             torch.zeros(batch_size, self.hidden_size),
@@ -67,5 +69,8 @@ class sLSTMCell(nn.Module):
         # Hidden state - equation (10) -> (batch_size, hidden_size)
         ht = ot * (c / nt)
 
-        # -> (batch_size, hidden_size), (batch_size, hidden_size, batch_size, hidden_size, batch_size, hidden_size, batch_size, hidden_size)
-        return ht, (ht, ct, nt, mt)
+        # Map the hidden state to the output -> (batch_size, 1)
+        output = self.linear(ht)
+
+        # -> (batch_size, 1), (batch_size, hidden_size, batch_size, hidden_size, batch_size, hidden_size, batch_size, hidden_size)
+        return output, (ht, ct, nt, mt)

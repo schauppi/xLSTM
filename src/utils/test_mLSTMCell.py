@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
-from src.sLSTMCell import sLSTMCell
+from src.mLSTMCell import mLSTMCell
 
 # Generate a sine wave
 num_points = 100
@@ -20,7 +20,7 @@ learning_rate = 0.01
 num_epochs = 500
 
 # Model, loss function, and optimizer
-model = sLSTMCell(input_size, hidden_size)
+model = mLSTMCell(input_size, hidden_size)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -55,9 +55,9 @@ with torch.no_grad():
 
 # Plot the results
 plt.figure(figsize=(12, 6))
-plt.title(f"sLSTM - Original vs Predicted Sine Wave, hidden_size={hidden_size}")
+plt.title(f"mLSTM - Original vs Predicted Sine Wave, hidden_size={hidden_size}")
 plt.plot(time[1:], data[1:], label="Original")
 plt.plot(time[1:], predictions, label="Predicted")
 plt.legend()
-plt.savefig(f"images/sLSTMCell_{hidden_size}.png")
+plt.savefig(f"images/mLSTMCell_{hidden_size}.png")
 plt.show()

@@ -8,12 +8,13 @@ Results on an sine wave with 5 hidden units and 500 epochs.
 
 ## sLSTM
 
-![Figure 2](images/sLSTM_5.png)
+![Figure 2](images/sLSTMCell_10.png)
 
 ## mLSTM
 
-![Figure 3](images/mLSTM_5.png)
+![Figure 3](images/mLSTMCell_10.png)
 
 # To Do
 
-- [ ] Check implementation of mLSTM - seems somewhat off
+- [X] Check implementation of mLSTM - seems somewhat off
+- [ ] Implement xLSTM - stack Cells together
